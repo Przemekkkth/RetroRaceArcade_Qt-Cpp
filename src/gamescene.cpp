@@ -41,7 +41,7 @@ void GameScene::loop()
     if( m_loopTime > m_loopSpeed)
     {
         float elapsedTime = 1.0f/m_loopSpeed;
-        m_image.fill(QColor(Qt::black));
+        m_image.fill(QColor(Qt::gray));
         handlePlayerInput(elapsedTime);
 
         // If car curvature is too different to track curvature, slow down
@@ -61,7 +61,6 @@ void GameScene::loop()
             m_speed = 1.0f;
         }
 
-        qDebug() << "m_speed " << m_speed;
         // Move car along track according to car speed
         m_distance += (70.0f * m_speed) * elapsedTime;
 
@@ -147,7 +146,7 @@ void GameScene::loop()
                 QColor nClipColour = sinf(80.0f *  powf(1.0f - fPerspective, 2) + m_distance) > 0.0f ? Qt::red : Qt::white;
 
                 // Start finish straight changes the road colour to inform the player lap is reset
-                int nRoadColour = (nTrackSection-1) == 0 ? Qt::white : Qt::gray;
+                QColor nRoadColour = (nTrackSection-1) == 0 ? Qt::white : Qt::gray;
 
                 // Draw the row segments
                 if (x >= 0 && x < nLeftGrass)
@@ -261,31 +260,33 @@ void GameScene::render()
     {
     case 0:
     {
-        QGraphicsRectItem* rItem = new QGraphicsRectItem();
-        rItem->setBrush(Qt::red);
-        rItem->setPos(nCarPos, 80*SCREEN::CELL_SIZE.height());
-        rItem->setRect(0,0, 14*SCREEN::CELL_SIZE.width(), 6*SCREEN::CELL_SIZE.height());
-        addItem(rItem);
+        QGraphicsPixmapItem* pItem = new QGraphicsPixmapItem();
+        pItem->setPixmap(m_upCarPixmap);
+        pItem->setPos(nCarPos, 80*SCREEN::CELL_SIZE.height());
+        addItem(pItem);
     }
         break;
 
     case +1:
     {
-        QGraphicsRectItem* rItem = new QGraphicsRectItem();
-        rItem->setBrush(Qt::green);
-        rItem->setPos(nCarPos, 80*SCREEN::CELL_SIZE.height());
-        rItem->setRect(0,0, 14*SCREEN::CELL_SIZE.width(), 6*SCREEN::CELL_SIZE.height());
-        addItem(rItem);
+        QGraphicsPixmapItem* pItem = new QGraphicsPixmapItem();
+        pItem->setPixmap(m_rightCarPixmap);
+        pItem->setPos(nCarPos, 80*SCREEN::CELL_SIZE.height());
+        addItem(pItem);
     }
         break;
 
     case -1:
     {
-        QGraphicsRectItem* rItem = new QGraphicsRectItem();
-        rItem->setBrush(Qt::blue);
-        rItem->setPos(nCarPos, 80*SCREEN::CELL_SIZE.height());
-        rItem->setRect(0,0, 14*SCREEN::CELL_SIZE.width(), 6*SCREEN::CELL_SIZE.height());
-        addItem(rItem);
+//        QGraphicsRectItem* rItem = new QGraphicsRectItem();
+//        rItem->setBrush(Qt::blue);
+//        rItem->setPos(nCarPos, 80*SCREEN::CELL_SIZE.height());
+//        rItem->setRect(0,0, 14*SCREEN::CELL_SIZE.width(), 6*SCREEN::CELL_SIZE.height());
+//        addItem(rItem);
+        QGraphicsPixmapItem* pItem = new QGraphicsPixmapItem();
+        pItem->setPixmap(m_leftCarPixmap);
+        pItem->setPos(nCarPos, 80*SCREEN::CELL_SIZE.height());
+        addItem(pItem);
     }
         break;
     }
