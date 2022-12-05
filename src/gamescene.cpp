@@ -3,6 +3,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QDebug>
 #include <QGraphicsPixmapItem>
+#include <QGraphicsSimpleTextItem>
 #include "utils.h"
 
 GameScene::GameScene(QObject *parent)
@@ -290,6 +291,32 @@ void GameScene::render()
     }
         break;
     }
+
+    drawString(0,0, "Distance:         " + QString::number(m_distance, 'f', 2) + " m");
+    drawString(0,1, "Target Curvature: " + QString::number(m_curvature, 'f', 2));
+    drawString(0,2, "Player Curvature: " + QString::number(m_playerCurvature, 'f', 2));
+    drawString(0,3, "Player Speed:     " + QString::number(m_speed) + " km/h");
+    drawString(0, 4,"Track Curvature:  " + QString::number(m_trackCurvature, 'f', 2));
+
+    auto disp_time = [](float t) // Little lambda to turn floating point seconds into minutes:seconds:millis string
+    {
+        int nMinutes = t / 60.0f;
+        int nSeconds = t - (nMinutes * 60.0f);
+        int nMilliSeconds = (t - (float)nSeconds) * 1000.0f;
+        if(nMilliSeconds > 100000)
+        {
+            nMilliSeconds = 99999;
+        }
+        return QString::number(nMinutes) + "." + QString::number(nSeconds) + ":" + QString::number(nMilliSeconds);
+    };
+    // Display current laptime
+    drawString(0, 5, "LapTime: " + disp_time(m_currentLapTime));
+
+    drawString(0, 6, "Last 5 lap: ");
+    for(int i = 0; i < m_listLapTimes.size(); ++i)
+    {
+        drawString(0, 7+i, disp_time(m_listLapTimes[i]));
+    }
 }
 
 void GameScene::createPixmap()
@@ -301,6 +328,19 @@ void GameScene::createPixmap()
     m_upCarPixmap = tmp.copy(0,0,w,h);
     m_rightCarPixmap = tmp.copy(w, 0, w, h);
     m_leftCarPixmap = tmp.copy(2*w, 0, w, h);
+}
+
+void GameScene::drawString(int x, int y, QString text)
+{
+    QGraphicsSimpleTextItem* tItem = new QGraphicsSimpleTextItem();
+    QFont tFont = tItem->font();
+    tFont.setPointSize(SCREEN::CELL_SIZE.height()*3);
+    tItem->setFont(tFont);
+    tItem->setPos(x*SCREEN::CELL_SIZE.width(), 3*y*SCREEN::CELL_SIZE.height());
+    tItem->setBrush(QColor(Qt::white));
+    tItem->setPen(QColor(Qt::white));
+    tItem->setText(text);
+    addItem(tItem);
 }
 
 void GameScene::keyPressEvent(QKeyEvent *event)

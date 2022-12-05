@@ -40,6 +40,7 @@ private:
     void onUserCreate();
     void render();
     void createPixmap();
+    void drawString(int x, int y, QString text);
     KeyStatus* m_keys[256];
     MouseStatus* m_mouse;
 
