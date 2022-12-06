@@ -44,6 +44,9 @@ void GameScene::loop()
         float elapsedTime = 1.0f/m_loopSpeed;
         m_image.fill(QColor(Qt::gray));
         handlePlayerInput(elapsedTime);
+        //Helping variables
+        const int LogicalWidth  = SCREEN::LOGICAL_SIZE.width();
+        const int LogicalHeight = SCREEN::LOGICAL_SIZE.height();
 
         // If car curvature is too different to track curvature, slow down
         // as car has gone off track
@@ -101,20 +104,20 @@ void GameScene::loop()
         m_trackCurvature += (m_curvature) * elapsedTime * m_speed;
 
         // Draw Sky - light blue and dark blue
-        for (int y = 0; y < SCREEN::LOGICAL_SIZE.height() / 2; y++)
+        for (int y = 0; y < LogicalHeight / 2; y++)
         {
-            for (int x = 0; x < SCREEN::LOGICAL_SIZE.width(); x++)
+            for (int x = 0; x < LogicalWidth; x++)
             {
-                m_image.setPixelColor(x, y, y < SCREEN::LOGICAL_SIZE.height() / 4 ? Qt::blue : Qt::darkBlue);
+                m_image.setPixelColor(x, y, y < LogicalHeight / 4 ? Qt::blue : Qt::darkBlue);
             }
         }
 
         // Draw Scenery - our hills are a rectified sine wave, where the phase is adjusted by the
         // accumulated track curvature
-        for (int x = 0; x < SCREEN::LOGICAL_SIZE.width(); x++)
+        for (int x = 0; x < LogicalWidth; x++)
         {
             int nHillHeight = (int)(fabs(sinf(x * 0.01f + m_trackCurvature) * 16.0f));
-            for (int y = (SCREEN::LOGICAL_SIZE.height() / 2) - nHillHeight; y < SCREEN::LOGICAL_SIZE.height() / 2; y++)
+            for (int y = (LogicalHeight / 2) - nHillHeight; y < LogicalHeight / 2; y++)
             {
                 m_image.setPixelColor(x, y, Qt::darkYellow);
             }
@@ -122,12 +125,12 @@ void GameScene::loop()
         }
 
         // Draw Track - Each row is split into grass, clip-board and track
-        for(int y = 0; y < SCREEN::LOGICAL_SIZE.height()/2; ++y)
+        for(int y = 0; y < LogicalHeight/2; ++y)
         {
-            for(int x = 0; x < SCREEN::LOGICAL_SIZE.width(); ++x)
+            for(int x = 0; x < LogicalWidth; ++x)
             {
                 // Perspective is used to modify the width of the track row segments
-                float fPerspective = (float)y / (SCREEN::LOGICAL_SIZE.height()/2.0f);
+                float fPerspective = (float)y / (LogicalHeight/2.0f);
                 float fRoadWidth = 0.1f + fPerspective * 0.8f; // Min 10% Max 90%
                 float fClipWidth = fRoadWidth * 0.15f;
                 fRoadWidth *= 0.5f;	// Halve it as track is symmetrical around center of track, but offset...
@@ -135,12 +138,12 @@ void GameScene::loop()
                 // track curvature.
                 float fMiddlePoint = 0.5f + m_curvature * powf((1.0f - fPerspective), 3);
                 // Work out segment boundaries
-                int nLeftGrass = (fMiddlePoint - fRoadWidth - fClipWidth) * SCREEN::LOGICAL_SIZE.width();
-                int nLeftClip = (fMiddlePoint - fRoadWidth) * SCREEN::LOGICAL_SIZE.width();
-                int nRightClip = (fMiddlePoint + fRoadWidth) * SCREEN::LOGICAL_SIZE.width();
-                int nRightGrass = (fMiddlePoint + fRoadWidth + fClipWidth) * SCREEN::LOGICAL_SIZE.width();
+                int nLeftGrass = (fMiddlePoint - fRoadWidth - fClipWidth) * LogicalWidth;
+                int nLeftClip = (fMiddlePoint - fRoadWidth) * LogicalWidth;
+                int nRightClip = (fMiddlePoint + fRoadWidth) * LogicalWidth;
+                int nRightGrass = (fMiddlePoint + fRoadWidth + fClipWidth) * LogicalWidth;
 
-                int nRow = SCREEN::LOGICAL_SIZE.height() / 2 + y;
+                int nRow = LogicalHeight / 2 + y;
                 // Using periodic oscillatory functions to give lines, where the phase is controlled
                 // by the distance around the track. These take some fine tuning to give the right "feel"
                 QColor nGrassColour = sinf(20.0f *  powf(1.0f - fPerspective,3) + m_distance * 0.1f) > 0.0f ? Qt::green : Qt::darkGreen;
@@ -166,7 +169,7 @@ void GameScene::loop()
                 {
                     m_image.setPixelColor(x, nRow, nClipColour);
                 }
-                if (x >= nRightGrass && x < SCREEN::LOGICAL_SIZE.width())
+                if (x >= nRightGrass && x < LogicalWidth)
                 {
                     m_image.setPixelColor(x, nRow, nGrassColour);
                 }
@@ -189,7 +192,7 @@ void GameScene::handlePlayerInput(float elapsedTime)
 {
     m_carDirection = 0;
 
-    if (m_keys[KEYBOARD::KEY_UP]->m_held)
+    if (m_keys[KEYBOARD::KEY_UP]->m_held || m_keys[KEYBOARD::KEY_W]->m_held)
     {
         m_speed += 2.0f * elapsedTime;
     }
@@ -200,13 +203,13 @@ void GameScene::handlePlayerInput(float elapsedTime)
 
     // Car Curvature is accumulated left/right input, but inversely proportional to speed
     // i.e. it is harder to turn at high speed
-    if (m_keys[KEYBOARD::KEY_LEFT]->m_held)
+    if (m_keys[KEYBOARD::KEY_LEFT]->m_held || m_keys[KEYBOARD::KEY_A]->m_held)
     {
         m_playerCurvature -= 0.7f * elapsedTime * (1.0f - m_speed / 2.0f);
         m_carDirection = -1;
     }
 
-    if (m_keys[KEYBOARD::KEY_RIGHT]->m_held)
+    if (m_keys[KEYBOARD::KEY_RIGHT]->m_held || m_keys[KEYBOARD::KEY_D]->m_held)
     {
         m_playerCurvature += 0.7f * elapsedTime * (1.0f - m_speed / 2.0f);
         m_carDirection = +1;
@@ -256,14 +259,16 @@ void GameScene::render()
     addItem(pItem);
 
 //Draw Car
-    int nCarPos = SCREEN::PHYSICAL_SIZE.width() / 2 + ((int)(SCREEN::PHYSICAL_SIZE.width() * m_carPos) / 2.0) - 7; // Offset for sprite
+    int nCarPos = SCREEN::PHYSICAL_SIZE.width() / 2 + ((int)(SCREEN::PHYSICAL_SIZE.width() * m_carPos) / 2.0) - 7*SCREEN::CELL_SIZE.width(); // Offset for sprite
+    QSize carSpriteSize = QSize(14*SCREEN::CELL_SIZE.width(), 6*SCREEN::CELL_SIZE.height());
+    int yCarPos = 80*SCREEN::CELL_SIZE.height();
     switch (m_carDirection)
     {
     case 0:
     {
         QGraphicsPixmapItem* pItem = new QGraphicsPixmapItem();
-        pItem->setPixmap(m_upCarPixmap);
-        pItem->setPos(nCarPos, 80*SCREEN::CELL_SIZE.height());
+        pItem->setPixmap(m_upCarPixmap.scaled(carSpriteSize));
+        pItem->setPos(nCarPos, yCarPos);
         addItem(pItem);
     }
         break;
@@ -271,22 +276,17 @@ void GameScene::render()
     case +1:
     {
         QGraphicsPixmapItem* pItem = new QGraphicsPixmapItem();
-        pItem->setPixmap(m_rightCarPixmap);
-        pItem->setPos(nCarPos, 80*SCREEN::CELL_SIZE.height());
+        pItem->setPixmap(m_rightCarPixmap.scaled(carSpriteSize));
+        pItem->setPos(nCarPos, yCarPos);
         addItem(pItem);
     }
         break;
 
     case -1:
     {
-//        QGraphicsRectItem* rItem = new QGraphicsRectItem();
-//        rItem->setBrush(Qt::blue);
-//        rItem->setPos(nCarPos, 80*SCREEN::CELL_SIZE.height());
-//        rItem->setRect(0,0, 14*SCREEN::CELL_SIZE.width(), 6*SCREEN::CELL_SIZE.height());
-//        addItem(rItem);
         QGraphicsPixmapItem* pItem = new QGraphicsPixmapItem();
-        pItem->setPixmap(m_leftCarPixmap);
-        pItem->setPos(nCarPos, 80*SCREEN::CELL_SIZE.height());
+        pItem->setPixmap(m_leftCarPixmap.scaled(carSpriteSize));
+        pItem->setPos(nCarPos, yCarPos);
         addItem(pItem);
     }
         break;
