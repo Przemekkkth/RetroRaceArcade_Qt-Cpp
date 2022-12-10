@@ -38,9 +38,10 @@ private:
     void handlePlayerInput(float elapsedTime);
     void resetKeyStatus();
     void onUserCreate();
-    void render();
+    void renderGameObjects();
     void createPixmap();
     void drawString(int x, int y, QString text);
+    void renderGameScene();
     KeyStatus* m_keys[256];
     MouseStatus* m_mouse;
 

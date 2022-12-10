@@ -4,6 +4,8 @@
 #include <QDebug>
 #include <QGraphicsPixmapItem>
 #include <QGraphicsSimpleTextItem>
+#include <QDir>
+#include <QPainter>
 #include "utils.h"
 
 GameScene::GameScene(QObject *parent)
@@ -182,7 +184,7 @@ void GameScene::loop()
         m_carPos = m_playerCurvature - m_trackCurvature;
 
 
-        render();
+        renderGameObjects();
         m_loopTime -= m_loopSpeed;
         resetKeyStatus();
     }
@@ -213,6 +215,11 @@ void GameScene::handlePlayerInput(float elapsedTime)
     {
         m_playerCurvature += 0.7f * elapsedTime * (1.0f - m_speed / 2.0f);
         m_carDirection = +1;
+    }
+
+    if(m_keys[KEYBOARD::KEY_Z]->m_released)
+    {
+        renderGameScene();
     }
 }
 
@@ -249,7 +256,7 @@ void GameScene::onUserCreate()
     m_currentLapTime = 0.0f;
 }
 
-void GameScene::render()
+void GameScene::renderGameObjects()
 {
     clear();
 //Draw Background
@@ -341,6 +348,19 @@ void GameScene::drawString(int x, int y, QString text)
     tItem->setPen(QColor(Qt::white));
     tItem->setText(text);
     addItem(tItem);
+}
+
+void GameScene::renderGameScene()
+{
+    static int index = 0;
+    QString fileName = QDir::currentPath() + QDir::separator() + "screen" + QString::number(index++) + ".png";
+    QRect rect = sceneRect().toAlignedRect();
+    QImage image(rect.size(), QImage::Format_ARGB32);
+    image.fill(Qt::transparent);
+    QPainter painter(&image);
+    render(&painter);
+    image.save(fileName);
+    qDebug() << "saved " << fileName;
 }
 
 void GameScene::keyPressEvent(QKeyEvent *event)
