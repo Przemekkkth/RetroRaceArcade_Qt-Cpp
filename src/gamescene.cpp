@@ -41,7 +41,7 @@ void GameScene::loop()
     m_elapsedTimer.restart();
 
     m_loopTime += m_deltaTime;
-    if( m_loopTime > m_loopSpeed)
+    while( m_loopTime > m_loopSpeed)
     {
         float elapsedTime = 1.0f/m_loopSpeed;
         m_image.fill(QColor(Qt::gray));
@@ -185,6 +185,22 @@ void GameScene::loop()
 
 
         renderGameObjects();
+        //add boundary
+        setBackgroundBrush(Qt::black);
+        QGraphicsRectItem* lItem = new QGraphicsRectItem();
+        lItem->setRect(0,0, SCREEN::PHYSICAL_SIZE.width(), SCREEN::PHYSICAL_SIZE.height());
+        lItem->setPen(QColor(Qt::black));
+        lItem->setBrush(QColor(Qt::black));
+        lItem->setPos(-SCREEN::PHYSICAL_SIZE.width(), 0);
+        addItem(lItem);
+
+        QGraphicsRectItem* rItem = new QGraphicsRectItem();
+        rItem->setRect(0,0, SCREEN::PHYSICAL_SIZE.width(), SCREEN::PHYSICAL_SIZE.height());
+        rItem->setPen(QColor(Qt::black));
+        rItem->setBrush(QColor(Qt::black));
+        rItem->setPos(+SCREEN::PHYSICAL_SIZE.width(), 0);
+        addItem(rItem);
+
         m_loopTime -= m_loopSpeed;
         resetKeyStatus();
     }
