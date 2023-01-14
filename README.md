@@ -18,4 +18,4 @@ qmake && make
 ## Addons
 * [Qt](https://www.qt.io/) - Cross-Platform software for embedded & desktop
 * [yt](https://youtu.be/2HYlmMHNWxU) - gameplay
-
+* [Play online](https://przemekkkth.github.io/retroarcade/index.html) - game hosted on GitHub
