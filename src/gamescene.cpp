@@ -6,6 +6,7 @@
 #include <QGraphicsSimpleTextItem>
 #include <QDir>
 #include <QPainter>
+#include <cmath>
 #include "utils.h"
 
 GameScene::GameScene(QObject *parent)
